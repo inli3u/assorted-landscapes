@@ -1,10 +1,31 @@
 'use strict';
 
 function main() {
+  document.addEventListener('DOMContentLoaded', function () {
+    generate();
+    document.body.addEventListener('click', (e) => generate());
+    document.body.addEventListener('keypress', (e) => generate());
+  });
+}
+
+function generate() {
+  let canvas = document.querySelector('canvas');
+  canvas.width = window.innerWidth * window.devicePixelRatio;
+  canvas.height = window.innerHeight * window.devicePixelRatio;
+  let ctx = canvas.getContext('2d');
+
+
   let random = randomArray(20);
   let rows = [];
   quicksort(random, (list) => rows.push(list));
-  renderFilled(rows);
+  //renderFilled(rows);
+  let transformed = rows.map((row, i) => pointsFromRow(row, rows.length, i, canvas.width, canvas.height));
+
+  //drawStroked(ctx, transformed, makeLinearPath);
+  //drawStroked(ctx, transformed, makeBezierPath);
+  drawFilled2(ctx, transformed, makeBezierPath);
+  //drawFilled1(ctx, transformed, makeBezierPath);
+
 }
 
 
@@ -13,71 +34,112 @@ function main() {
  * Renderer
  */
 
-function renderStroked(rows) {
-  let canvas = document.querySelector('canvas');
-  canvas.width = window.innerWidth * window.devicePixelRatio;
-  canvas.height = window.innerHeight * window.devicePixelRatio;
-  let ctx = canvas.getContext('2d');
+function drawStroked(ctx, all, pathFunc) {
+  for (let i = 0; i < all.length; i++) {
+    let row = all[i];
 
-  const xsize = canvas.width / (rows[0].length - 1);
-  const ysize = xsize * 5;
-  const yspace = (canvas.height - ysize) / rows.length;
+    pathFunc(ctx, row);
 
-  for (let y = 0; y < rows.length; y++) {
-    let row = rows[y];
-
-    let v = (1 - row[0] / 100) * ysize;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.lineWidth = y / rows.length * 4 + 2;
-    ctx.beginPath();
-    ctx.moveTo(0 * xsize, y * yspace + v);
-    for (let x = 1; x < row.length; x++) {
-      let v = (1 - row[x] / 100) * ysize;
-      ctx.lineTo(x * xsize, y * yspace + v);
-    }
+    ctx.lineWidth = i / all.length * 4 + 2;
     ctx.stroke();
   }
 }
 
-
-function renderFilled(rows) {
+function drawFilled1(ctx, all, pathFunc) {
   let canvas = document.querySelector('canvas');
-  canvas.width = window.innerWidth * window.devicePixelRatio;
-  canvas.height = window.innerHeight * window.devicePixelRatio;
-  let ctx = canvas.getContext('2d');
-
-
   let c = 30;
   ctx.fillStyle = rgba(c, c, c, 1);
-  //ctx.fillStyle = rgba(255, 255, 255, 1);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const xsize = canvas.width / (rows[0].length - 1);
-  const ysize = xsize * 5;
-  const yspace = (canvas.height - ysize) / rows.length;
+  for (let i = 0; i < all.length; i++) {
+    let row = all[i];
 
-  for (let y = 0; y < rows.length; y++) {
-    let row = rows[y];
+    pathFunc(ctx, row);
+    closePath(ctx, canvas.width, canvas.height);
 
-    let v = (1 - row[0] / 100) * ysize;
-    let depth = y / rows.length;
-    
-    ctx.beginPath();
-    ctx.moveTo(canvas.width, canvas.height);
-    ctx.lineTo(0, canvas.height);
-    ctx.lineTo(0 * xsize, y * yspace + v);
-
-    for (let x = 1; x < row.length; x++) {
-      let v = (1 - row[x] / 100) * ysize;
-      ctx.lineTo(x * xsize, y * yspace + v);
-    }
-
-    ctx.closePath();
-
-    let color = ((depth) * 0.5 + 0.25) * 255;
+    let depth = i / all.length;
+    let color = ((depth) * 0.7 + 0.2) * 255; // values from 0.2 to 0.95, dark gray to off white
     ctx.fillStyle = rgba(color, color, color, 1);
     ctx.fill();
   }
+}
+
+function drawFilled2(ctx, all, pathFunc) {
+  let canvas = document.querySelector('canvas');
+  let c = 200;
+  ctx.fillStyle = 'transparent';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < all.length; i++) {
+    let row = all[i];
+
+    pathFunc(ctx, row);
+    closePath(ctx, canvas.width, canvas.height);
+
+    let depth = i / all.length;
+    let color = 255;
+    ctx.fillStyle = rgba(color, color, color, 1);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.lineWidth = i / all.length * 4 + 2;
+    ctx.stroke();
+  }
+
+  // let color = 230;
+  // ctx.fillStyle = rgba(color, color, color, 1);
+  // ctx.fill();
+}
+
+function pointsFromRow(row, rowsLength, y, width, height) {
+  const stepX = width / (row.length - 1);
+  const stepY = stepX * 5;
+  const yspace = (height - stepY) / rowsLength;
+  let offsetY = y * yspace;
+
+  return row.map((v, i) => {
+    let nx = i * stepX;
+    let ny = offsetY + (1 - v) * stepY;
+    return {x: nx, y: ny};
+  });
+}
+
+function makeBezierPath(ctx, row) {
+  let px = row[0].x;
+  let py = row[0].y;
+
+  ctx.beginPath();
+  ctx.moveTo(row[0].x, row[0].y);
+
+  for (let i = 1; i < row.length; i++) {
+    let nx = row[i].x;
+    let ny = row[i].y;
+    let c1x = (px + nx) / 2;
+    let c1y = py;
+    let c2x = (px + nx) / 2;
+    let c2y = ny;
+
+    ctx.bezierCurveTo(c1x, c1y, c2x, c2y, nx, ny);
+
+    px = nx;
+    py = ny;
+  }
+}
+
+function makeLinearPath(ctx, row) {
+  ctx.beginPath();
+  ctx.moveTo(row[0].x, row[0].y);
+
+  for (let i = 1; i < row.length; i++) {
+    ctx.lineTo(row[i].x, row[i].y);
+  }
+}
+
+function closePath(ctx, width, height) {
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
 }
 
 function rgba(r, g, b, a) {
@@ -163,10 +225,8 @@ function isSorted(list) {
 
 function randomArray(len) {
   let a = [];
-  let min = 0;
-  let max = 100;
   for (let i = 0; i < len; i++) {
-    a.push(Math.round(Math.random() * max));
+    a.push(Math.random());
   }
   return a;
 }
