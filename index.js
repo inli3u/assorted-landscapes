@@ -15,10 +15,14 @@ function generate() {
   let ctx = canvas.getContext('2d');
 
 
+  // let random = randomArray(20);
+  // let rows = [copyArray(random)];
+  // quicksort(random, (list) => rows.push(list));
+
   let random = randomArray(20);
-  let rows = [];
-  quicksort(random, (list) => rows.push(list));
-  //renderFilled(rows);
+  let rows = [copyArray(random), ...mergesortBU(random)];
+
+
   let transformed = rows.map((row, i) => pointsFromRow(row, rows.length, i, canvas.width, canvas.height));
 
   //drawStroked(ctx, transformed, makeLinearPath);
@@ -206,10 +210,43 @@ function swap(list, firstIndex, secondIndex) {
 }
 
 
+/**
+ * Mergesort
+ */
+
+function *mergesortBU(list) {
+  let n = list.length;
+  for (let size = 1; size < n; size += size) {
+    for (let low = 0; low < n - size; low += size + size) {
+      yield* merge(list, low, low + size - 1, Math.min(low + size + size - 1, n - 1));
+    }
+  }
+}
+
+function *merge(list, low, mid, high) {
+  let i = low;
+  let j = mid + 1;
+  let aux = copyArray(list);
+
+  for (let k = low; k <= high; k++) {
+    if      (i > mid)         list[k] = aux[j++];
+    else if (j > high)        list[k] = aux[i++];
+    else if (aux[j] < aux[i]) list[k] = aux[j++];
+    else                      list[k] = aux[i++];
+
+    yield copyArray(list);
+  }
+}
+
+
 
 /**
  * Helpers
  */
+
+function copyArray(a) {
+  return a.slice();
+}
 
 function isSorted(list) {
   if (!Array.isArray(list)) throw new TypeError('First argument must be an array');
@@ -236,4 +273,6 @@ if (typeof exports !== 'undefined') {
   exports.randomArray = randomArray;
   exports.isSorted = isSorted;
   exports.quicksort = quicksort;
+  exports.merge = merge;
+  exports.mergesortBU = mergesortBU;
 }

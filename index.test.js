@@ -1,7 +1,9 @@
 const {
   quicksort,
   isSorted,
-  randomArray
+  randomArray,
+  merge,
+  mergesortBU
 } = require('./index.js');
 
 
@@ -39,3 +41,39 @@ test('quicksort', () => {
     throw new Error('Assertion failed: Quicksort.sort did not sort the array');
   }
 });
+
+test('merge', () => {
+  let left = randomArray(10);
+  let right = randomArray(10);
+
+  left.sort();
+  right.sort();
+  let combined = left.concat(right);
+
+  low = 0;
+  mid = left.length - 1;
+  high = combined.length - 1;
+  
+  let result = last(merge(combined, low, mid, high));
+
+  if (isSorted(result) !== true) {
+    throw new Error('Assertion failed: merge did not merge the array');
+  }
+});
+
+test('mergesortBU', () => {
+  let random = randomArray(100);
+
+  // It sorts the array
+  let result = last(mergesortBU(random));
+
+  if (isSorted(result) !== true) {
+    throw new Error('Assertion failed: mergesortBU did not sort the array');
+  }
+});
+
+function last(generator) {
+  let result = null;
+  for (result of generator);
+  return result;
+}
