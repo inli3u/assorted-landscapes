@@ -14,24 +14,37 @@ function generate() {
   canvas.height = window.innerHeight * window.devicePixelRatio;
   let ctx = canvas.getContext('2d');
 
-
-  // let random = randomArray(20);
-  // let rows = [copyArray(random)];
-  // quicksort(random, (list) => rows.push(list));
-
   let random = randomArray(20);
-  let rows = [copyArray(random), ...mergesortBU(random)];
 
+  let rows = [copyArray(random)];
+  quicksort(random, (list) => rows.push(list));
+
+  // let rows = [copyArray(random), ...mergesortBU(random)];
+  // rows = sample(rows, 20);
 
   let transformed = rows.map((row, i) => pointsFromRow(row, rows.length, i, canvas.width, canvas.height));
 
-  //drawStroked(ctx, transformed, makeLinearPath);
-  //drawStroked(ctx, transformed, makeBezierPath);
   drawFilled2(ctx, transformed, makeBezierPath);
-  //drawFilled1(ctx, transformed, makeBezierPath);
-
 }
 
+/**
+ * Given an array, return a new array containing at most max items evenly distributed across the original array
+*/
+function sample(array, max) {
+  if (max <= 0) return [];
+  if (max >= array.length) return array;
+
+  let result = [];
+  for (let n = 0; n < max - 1; n++) {
+    let i = Math.round(n / max * array.length);
+    result.push(array[i]);
+  }
+
+  // Always include last result.
+  result.push(array[array.length - 1]);
+
+  return result;
+}
 
 
 /**
@@ -96,16 +109,24 @@ function drawFilled2(ctx, all, pathFunc) {
   // ctx.fill();
 }
 
-function pointsFromRow(row, rowsLength, y, width, height) {
-  const stepX = width / (row.length - 1);
-  const stepY = stepX * 5;
-  const yspace = (height - stepY) / rowsLength;
-  let offsetY = y * yspace;
+function pointsFromRow(row, rowCount, rowIndex, canvasWidth, canvasHeight) {
+  const stepX = canvasWidth / (row.length - 1);
 
-  return row.map((v, i) => {
-    let nx = i * stepX;
-    let ny = offsetY + (1 - v) * stepY;
-    return {x: nx, y: ny};
+  // 2 = 3 / 4
+  // 3 = 4 / 6
+  let rowHeight = (rowCount + 1) / (rowCount * 2) * canvasHeight;
+
+  // 2 = 1 / 4
+  // 3 = 1 / 6
+  let rowOffsetY = rowIndex / (rowCount * 2) * canvasHeight;
+
+  return row.map((value, i) => {
+    let pointOffsetY = rowHeight * (1 - value);
+
+    return {
+      x: i * stepX,
+      y: pointOffsetY + rowOffsetY
+    };
   });
 }
 
