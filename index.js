@@ -1,30 +1,46 @@
 'use strict';
 
+let mouseX = 0;
+let rows = [];
+
 function main() {
   document.addEventListener('DOMContentLoaded', function () {
     generate();
     document.body.addEventListener('click', (e) => generate());
     document.body.addEventListener('keypress', (e) => generate());
+    document.body.addEventListener('mousemove', (e) => {
+      mouseX = e.pageX;
+      draw();
+    });
   });
 }
 
 function generate() {
+  let random = randomArray(20);
+
+  rows = [copyArray(random)];
+  quicksort(random, (list) => rows.push(list));
+
+  // rows = [copyArray(random), ...mergesortBU(random)];
+  // rows = sample(rows, 20);
+
+  draw();
+}
+
+function draw() {
   let canvas = document.querySelector('canvas');
   canvas.width = window.innerWidth * window.devicePixelRatio;
   canvas.height = window.innerHeight * window.devicePixelRatio;
   let ctx = canvas.getContext('2d');
 
-  let random = randomArray(20);
+  let lines = pointsFromRows(rows, canvas.width, canvas.height);
 
-  let rows = [copyArray(random)];
-  quicksort(random, (list) => rows.push(list));
+  let distance = mouseX * 2 - window.innerWidth;
+  console.log(distance);
+  //let linesParallax = parallax(lines, distance, 1);
+  let linesParallax = lines; //parallaxPerspective(lines, distance, canvas.width);
 
-  // let rows = [copyArray(random), ...mergesortBU(random)];
-  // rows = sample(rows, 20);
-
-  let transformed = rows.map((row, i) => pointsFromRow(row, rows.length, i, canvas.width, canvas.height));
-
-  drawFilled2(ctx, transformed, makeBezierPath);
+  drawFilled2(ctx, linesParallax, makeBezierPath);
 }
 
 /**
@@ -73,7 +89,7 @@ function drawFilled1(ctx, all, pathFunc) {
     let row = all[i];
 
     pathFunc(ctx, row);
-    closePath(ctx, canvas.width, canvas.height);
+    closePath(row, ctx, canvas.width, canvas.height);
 
     let depth = i / all.length;
     let color = ((depth) * 0.7 + 0.2) * 255; // values from 0.2 to 0.95, dark gray to off white
@@ -92,7 +108,7 @@ function drawFilled2(ctx, all, pathFunc) {
     let row = all[i];
 
     pathFunc(ctx, row);
-    closePath(ctx, canvas.width, canvas.height);
+    closePath(row, ctx, canvas.width, canvas.height);
 
     let depth = i / all.length;
     let color = 255;
@@ -100,7 +116,7 @@ function drawFilled2(ctx, all, pathFunc) {
     ctx.fill();
 
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.lineWidth = i / all.length * 4 + 2;
+    ctx.lineWidth = i / all.length * 2 * window.devicePixelRatio + 2;
     ctx.stroke();
   }
 
@@ -109,24 +125,51 @@ function drawFilled2(ctx, all, pathFunc) {
   // ctx.fill();
 }
 
-function pointsFromRow(row, rowCount, rowIndex, canvasWidth, canvasHeight) {
-  const stepX = canvasWidth / (row.length - 1);
-
+function pointsFromRows(rows, canvasWidth, canvasHeight) {
   // 2 = 3 / 4
   // 3 = 4 / 6
-  let rowHeight = (rowCount + 1) / (rowCount * 2) * canvasHeight;
+  let rowHeight = (rows.length + 1) / (rows.length * 2) * canvasHeight;
 
-  // 2 = 1 / 4
-  // 3 = 1 / 6
-  let rowOffsetY = rowIndex / (rowCount * 2) * canvasHeight;
+  return rows.map((row, rowIndex) => {
+    const stepX = canvasWidth / (row.length - 1);
 
-  return row.map((value, i) => {
-    let pointOffsetY = rowHeight * (1 - value);
+    // 2 = 1 / 4
+    // 3 = 1 / 6
+    let rowOffsetY = rowIndex / (rows.length * 2) * canvasHeight;
 
-    return {
-      x: i * stepX,
-      y: pointOffsetY + rowOffsetY
-    };
+    return row.map((value, i) => {
+      let pointOffsetY = rowHeight * (1 - value);
+
+      return {
+        x: i * stepX,
+        y: pointOffsetY + rowOffsetY
+      };
+    });
+  });
+}
+
+function parallax(lines, distance, strength) {
+  return lines.map((line, lineI) => {
+    let s = lineI / (lines.length - 1) * strength;
+    return line.map((point) => {
+      return {
+        x: point.x + distance + distance * s,
+        y: point.y
+      }
+    });
+  });
+}
+
+function parallaxPerspective(lines, camerax, canvasWidth) {
+  return lines.map((line, lineI) => {
+    //let 
+    let distance = 12 / ((lines.length - lineI) / 2 + 12) //* 0.02;
+    return line.map((point) => {
+      return {
+        x: (point.x - canvasWidth / 2 + camerax) * distance + canvasWidth / 2 ,
+        y: point.y
+      }
+    });
   });
 }
 
@@ -161,9 +204,9 @@ function makeLinearPath(ctx, row) {
   }
 }
 
-function closePath(ctx, width, height) {
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
+function closePath(line, ctx, width, height) {
+  ctx.lineTo(line[line.length - 1].x, height);
+  ctx.lineTo(line[0].x, height);
   ctx.closePath();
 }
 
