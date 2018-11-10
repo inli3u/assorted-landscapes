@@ -1,30 +1,85 @@
 'use strict';
 
 let mouseX = 0;
+let random = [];
 let rows = [];
 
 function main() {
   document.addEventListener('DOMContentLoaded', function () {
-    generate();
-    document.body.addEventListener('click', (e) => generate());
-    document.body.addEventListener('keypress', (e) => generate());
-    document.body.addEventListener('mousemove', (e) => {
-      mouseX = e.pageX;
+    resizeArray();
+    sortArray();
+    draw();
+
+    // document.body.addEventListener('click', (e) => generate());
+    // document.body.addEventListener('keypress', (e) => generate());
+    // document.body.addEventListener('mousemove', (e) => {
+    //   mouseX = e.pageX;
+    //   draw();
+    // });
+
+    document.getElementById('algo').addEventListener('change', (e) => {
+      sortArray();
+      draw();
+    });
+    document.getElementById('array-size').addEventListener('change', (e) => {
+      resizeArray();
+      sortArray();
+      draw()
+    });
+    document.getElementById('max-line-count').addEventListener('change', (e) => {
+      draw();
+    });
+    document.getElementById('height').addEventListener('change', (e) => {
+      draw();
+    });
+    document.getElementById('generate').addEventListener('click', (e) => {
+      randomizeArray();
+      sortArray();
       draw();
     });
   });
 }
 
-function generate() {
-  let random = randomArray(20);
+function getAlgo() {
+  return document.getElementById('algo').value;
+}
 
-  rows = [copyArray(random)];
-  quicksort(random, (list) => rows.push(list));
+function getArraySize() {
+  return parseInt(document.getElementById('array-size').value, 10);
+}
 
-  // rows = [copyArray(random), ...mergesortBU(random)];
-  // rows = sample(rows, 20);
+function getMaxLineCount() {
+  return parseInt(document.getElementById('max-line-count').value, 10);
+}
 
-  draw();
+function getHeight() {
+  return parseInt(document.getElementById('height').value, 10) / 100;
+}
+
+function randomizeArray() {
+  random = randomArray(getArraySize());
+}
+
+function resizeArray() {
+  let targetSize = getArraySize();
+
+  if (targetSize < random.length) {
+    random = random.slice(0, targetSize - 1);
+  }
+
+  if (targetSize > random.length) {
+    random = random.concat(randomArray(targetSize - random.length));
+  }
+}
+
+function sortArray() {
+  if (getAlgo() === 'quicksort') {
+    // quicksort function reports original array first.
+    rows = [];
+    quicksort(copyArray(random), (list) => rows.push(list));
+  } else {
+    rows = [copyArray(random), ...mergesortBU(copyArray(random))];
+  }
 }
 
 function draw() {
@@ -33,10 +88,9 @@ function draw() {
   canvas.height = window.innerHeight * window.devicePixelRatio;
   let ctx = canvas.getContext('2d');
 
-  let lines = pointsFromRows(rows, canvas.width, canvas.height);
+  let lines = pointsFromRows(sample(rows, getMaxLineCount()), canvas.width, canvas.height);
 
-  let distance = mouseX * 2 - window.innerWidth;
-  console.log(distance);
+  //let distance = mouseX * 2 - window.innerWidth;
   //let linesParallax = parallax(lines, distance, 1);
   let linesParallax = lines; //parallaxPerspective(lines, distance, canvas.width);
 
@@ -138,11 +192,42 @@ function pointsFromRows(rows, canvasWidth, canvasHeight) {
     let rowOffsetY = rowIndex / (rows.length * 2) * canvasHeight;
 
     return row.map((value, i) => {
-      let pointOffsetY = rowHeight * (1 - value);
+      // 50%:  .25, .5, .75
+      // 100%: 0,   .5, 1
+      //let v = value * getHeight() + value * ((1 - getHeight()) / 2);
+      let v = (value - 0.5) * getHeight() + 0.5;
+      let pointOffsetY = rowHeight * (1 - v);
+      //pointOffsetY = pointOffsetY * getHeight() + pointOffsetY * (getHeight() / 2);
 
       return {
         x: i * stepX,
         y: pointOffsetY + rowOffsetY
+      };
+    });
+  });
+}
+
+function pointsFromRowsEven(rows, canvasWidth, canvasHeight) {
+  // Height of first rowOffsetY, doubled
+  // 2 = 3 / 4
+  // 3 = 4 / 6
+  let rowHeight = 1 / (rows.length + 1) * 4 * canvasHeight;
+  console.log(rowHeight);
+
+  return rows.map((row, rowIndex) => {
+    const stepX = canvasWidth / (row.length - 1);
+
+    // 2 = 1 / 3, 2 / 3
+    // 3 = 1 / 4, 2 / 4, 3 / 4
+    let rowOffsetY = (rowIndex + 1) / (rows.length + 1) * canvasHeight;
+    if (rowIndex == 0) console.log(rowOffsetY);
+
+    return row.map((value, i) => {
+      let pointOffsetY = rowHeight * (1 - value) - (rowHeight / 2);
+
+      return {
+        x: i * stepX,
+        y: rowOffsetY + pointOffsetY
       };
     });
   });

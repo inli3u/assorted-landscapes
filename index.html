@@ -17,16 +17,22 @@
     height: 100%;
     margin: 0 auto;
   }
+
+  .controls {
+    position: absolute;
+  }
   </style>
 
   <div class="controls">
-    <h1>"Assorted Landscapes"</h1>
-    <select>
+    <!-- <h1>"Assorted Landscapes"</h1> -->
+    <select id="algo">
       <option value="quicksort">Quicksort</option>
       <option value="mergesort">Mergesort (bottom-up)</option>
     </select>
-    <input type="text" id="items" value="20" />
-    <input type="text" value="20" />
+    <input type="range" id="array-size" min="2" max="50" value="20" />
+    <input type="range" id="max-line-count" min="2" max="50" value="50" />
+    <input type="range" id="height" min="1" max="100" value="100" />
+    <button id="generate">Randomize</button>
   </div>
 
   <canvas></canvas>
