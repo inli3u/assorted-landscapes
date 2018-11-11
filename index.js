@@ -1,6 +1,5 @@
 'use strict';
 
-let mouseX = 0;
 let random = [];
 let rows = [];
 
@@ -10,12 +9,7 @@ function main() {
     sortArray();
     draw();
 
-    // document.body.addEventListener('click', (e) => generate());
-    // document.body.addEventListener('keypress', (e) => generate());
-    // document.body.addEventListener('mousemove', (e) => {
-    //   mouseX = e.pageX;
-    //   draw();
-    // });
+    window.addEventListener('resize', (e) => draw());
 
     document.getElementById('algo').addEventListener('change', (e) => {
       sortArray();
@@ -94,7 +88,7 @@ function draw() {
   //let linesParallax = parallax(lines, distance, 1);
   let linesParallax = lines; //parallaxPerspective(lines, distance, canvas.width);
 
-  drawFilled2(ctx, linesParallax, makeBezierPath);
+  drawFilledFlat(ctx, linesParallax, makeBezierPath);
 }
 
 /**
@@ -133,7 +127,7 @@ function drawStroked(ctx, all, pathFunc) {
   }
 }
 
-function drawFilled1(ctx, all, pathFunc) {
+function drawFilledDepth(ctx, all, pathFunc) {
   let canvas = document.querySelector('canvas');
   let c = 30;
   ctx.fillStyle = rgba(c, c, c, 1);
@@ -152,7 +146,7 @@ function drawFilled1(ctx, all, pathFunc) {
   }
 }
 
-function drawFilled2(ctx, all, pathFunc) {
+function drawFilledFlat(ctx, all, pathFunc) {
   let canvas = document.querySelector('canvas');
   let c = 200;
   ctx.fillStyle = 'transparent';
