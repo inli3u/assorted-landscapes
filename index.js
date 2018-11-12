@@ -1,38 +1,65 @@
 'use strict';
 
-let random = [];
-let rows = [];
+// "state"...
+let unsortedArray = [];
+let sortLog = [];
+
+
 
 function main() {
-  document.addEventListener('DOMContentLoaded', function () {
-    resizeArray();
-    sortArray();
-    draw();
-
-    window.addEventListener('resize', (e) => draw());
-
-    document.getElementById('algo').addEventListener('change', (e) => {
-      sortArray();
-      draw();
-    });
-    document.getElementById('array-size').addEventListener('change', (e) => {
-      resizeArray();
-      sortArray();
-      draw()
-    });
-    document.getElementById('max-line-count').addEventListener('change', (e) => {
-      draw();
-    });
-    document.getElementById('height').addEventListener('change', (e) => {
-      draw();
-    });
-    document.getElementById('generate').addEventListener('click', (e) => {
-      randomizeArray();
-      sortArray();
-      draw();
-    });
-  });
+  document.addEventListener('DOMContentLoaded', handleReady);
 }
+
+
+
+/*** Event handlers ***/
+
+function handleReady(e) {
+  window.addEventListener('resize', handleResize);
+  document.getElementById('algo').addEventListener('change', handleAlgoChange);
+  document.getElementById('array-size').addEventListener('change', handleArraySizeChange);
+  document.getElementById('max-line-count').addEventListener('change', handleMaxLineCount);
+  document.getElementById('height').addEventListener('change', handleHeightChange);
+  document.getElementById('generate').addEventListener('click', handleRandomizeClick);
+
+  unsortedArray = resizeRandomArray(unsortedArray, getArraySize());
+  sortLog = sortArray(unsortedArray);
+  draw(sortLog);
+}
+
+function handleResize(e) {
+  draw(sortLog);
+}
+
+function handleAlgoChange(e) {
+  sortLog = sortArray(unsortedArray);
+  draw(sortLog);
+}
+
+function handleArraySizeChange(e) {
+  unsortedArray = resizeRandomArray(unsortedArray, getArraySize());
+  sortLog = sortArray(unsortedArray);
+  draw(sortLog)
+}
+
+function handleMaxLineCount(e) {
+  draw(sortLog);
+}
+
+function handleHeightChange(e) {
+  draw(sortLog);
+}
+
+function handleRandomizeClick(e) {
+  // Generate new random array
+  unsortedArray = resizeRandomArray([], getArraySize());
+  sortLog = sortArray(unsortedArray);
+  draw(sortLog);
+}
+
+
+
+/*** Input ***/
 
 function getAlgo() {
   return document.getElementById('algo').value;
@@ -50,39 +77,17 @@ function getHeight() {
   return parseInt(document.getElementById('height').value, 10) / 100;
 }
 
-function randomizeArray() {
-  random = randomArray(getArraySize());
-}
 
-function resizeArray() {
-  let targetSize = getArraySize();
 
-  if (targetSize < random.length) {
-    random = random.slice(0, targetSize - 1);
-  }
+/*** Drawing functions ***/
 
-  if (targetSize > random.length) {
-    random = random.concat(randomArray(targetSize - random.length));
-  }
-}
-
-function sortArray() {
-  if (getAlgo() === 'quicksort') {
-    // quicksort function reports original array first.
-    rows = [];
-    quicksort(copyArray(random), (list) => rows.push(list));
-  } else {
-    rows = [copyArray(random), ...mergesortBU(copyArray(random))];
-  }
-}
-
-function draw() {
+function draw(sortLog) {
   let canvas = document.querySelector('canvas');
   canvas.width = window.innerWidth * window.devicePixelRatio;
   canvas.height = window.innerHeight * window.devicePixelRatio;
   let ctx = canvas.getContext('2d');
 
-  let lines = pointsFromRows(sample(rows, getMaxLineCount()), canvas.width, canvas.height);
+  let lines = pointsFromRows(sample(sortLog, getMaxLineCount()), canvas.width, canvas.height);
 
   //let distance = mouseX * 2 - window.innerWidth;
   //let linesParallax = parallax(lines, distance, 1);
@@ -90,30 +95,6 @@ function draw() {
 
   drawFilledFlat(ctx, linesParallax, makeBezierPath);
 }
-
-/**
- * Given an array, return a new array containing at most max items evenly distributed across the original array
-*/
-function sample(array, max) {
-  if (max <= 0) return [];
-  if (max >= array.length) return array;
-
-  let result = [];
-  for (let n = 0; n < max - 1; n++) {
-    let i = Math.round(n / max * array.length);
-    result.push(array[i]);
-  }
-
-  // Always include last result.
-  result.push(array[array.length - 1]);
-
-  return result;
-}
-
-
-/**
- * Renderer
- */
 
 function drawStroked(ctx, all, pathFunc) {
   for (let i = 0; i < all.length; i++) {
@@ -148,7 +129,6 @@ function drawFilledDepth(ctx, all, pathFunc) {
 
 function drawFilledFlat(ctx, all, pathFunc) {
   let canvas = document.querySelector('canvas');
-  let c = 200;
   ctx.fillStyle = 'transparent';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -158,7 +138,6 @@ function drawFilledFlat(ctx, all, pathFunc) {
     pathFunc(ctx, row);
     closePath(row, ctx, canvas.width, canvas.height);
 
-    let depth = i / all.length;
     let color = 255;
     ctx.fillStyle = rgba(color, color, color, 1);
     ctx.fill();
@@ -383,12 +362,63 @@ function *merge(list, low, mid, high) {
 
 
 
-/**
- * Helpers
- */
+/*** Array functions ***/
 
 function copyArray(a) {
   return a.slice();
+}
+
+function randomArray(len) {
+  let a = [];
+  for (let i = 0; i < len; i++) {
+    a.push(Math.random());
+  }
+  return a;
+}
+
+function resizeRandomArray(array, targetSize) {
+  if (targetSize < array.length) {
+    return array.slice(0, targetSize - 1);
+  }
+  
+  if (targetSize > array.length) {
+    return array.concat(randomArray(targetSize - array.length));
+  }
+
+  // No change
+  return copyArray(array);
+}
+
+function sortArray(array) {
+  let log = [];
+
+  if (getAlgo() === 'quicksort') {
+    // quicksort function reports original array first.
+    quicksort(copyArray(array), (list) => log.push(list));
+  } else {
+    log = [copyArray(array), ...mergesortBU(copyArray(array))];
+  }
+
+  return log;
+}
+
+/**
+ * Given an array, return a new array containing at most max items evenly distributed across the original array
+*/
+function sample(array, max) {
+  if (max <= 0) return [];
+  if (max >= array.length) return array;
+
+  let result = [];
+  for (let n = 0; n < max - 1; n++) {
+    let i = Math.round(n / max * array.length);
+    result.push(array[i]);
+  }
+
+  // Always include last result.
+  result.push(array[array.length - 1]);
+
+  return result;
 }
 
 function isSorted(list) {
@@ -401,14 +431,6 @@ function isSorted(list) {
   }
 
   return true;  
-}
-
-function randomArray(len) {
-  let a = [];
-  for (let i = 0; i < len; i++) {
-    a.push(Math.random());
-  }
-  return a;
 }
 
 // Exports for runnning tests
