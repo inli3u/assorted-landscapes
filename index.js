@@ -4,6 +4,7 @@
 let unsortedArray = [];
 let sortLog = [];
 
+let arraySize = 20;
 
 
 function main() {
@@ -21,6 +22,8 @@ function handleReady(e) {
   document.getElementById('max-line-count').addEventListener('change', handleMaxLineCount);
   document.getElementById('height').addEventListener('change', handleHeightChange);
   document.getElementById('generate').addEventListener('click', handleRandomizeClick);
+
+  //initKnob(document.getElementById('array-size-outer'));
 
   unsortedArray = resizeRandomArray(unsortedArray, getArraySize());
   sortLog = sortArray(unsortedArray);
@@ -57,7 +60,11 @@ function handleRandomizeClick(e) {
   draw(sortLog);
 }
 
-
+function setArraySize(n) {
+  if (n > 100) n = 100;
+  if (n < 2) n = 2;
+  arraySize = n;
+}
 
 /*** Input ***/
 
@@ -66,6 +73,7 @@ function getAlgo() {
 }
 
 function getArraySize() {
+  //return arraySize;
   return parseInt(document.getElementById('array-size').value, 10);
 }
 

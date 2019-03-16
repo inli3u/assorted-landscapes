@@ -6,6 +6,20 @@
     height: 100%;
     font-family: sans-serif;
     background-color: rgb(200, 200, 200);
+    user-select: none;
+  }
+
+  .container {
+    box-sizing:border-box;
+    padding: 2em;
+    height: 100%;
+  }
+
+  .grid {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: 200px 1fr;
   }
 
   h1 {
@@ -15,27 +29,81 @@
   canvas {
     width: 100%;
     height: 100%;
-    margin: 0 auto;
   }
 
-  .controls {
+  .control-row {
+    margin: 1em 0;
+  }
+
+  .control {
+    display: block;
+  }
+
+  .select {
+    position: relative;
+  }
+
+  .select select {
     position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+  }
+
+  .select label {
+    font-size: 18px;
+  }
+
+  .knob label {
+    display: block;
+    font-size: 0.75rem;
   }
   </style>
 
-  <div class="controls">
-    <!-- <h1>"Assorted Landscapes"</h1> -->
-    <select id="algo">
-      <option value="quicksort">Quicksort</option>
-      <option value="mergesort">Mergesort (bottom-up)</option>
-    </select>
-    <input type="range" id="array-size" min="2" max="50" value="20" />
-    <input type="range" id="max-line-count" min="2" max="50" value="50" />
-    <input type="range" id="height" min="1" max="100" value="100" />
-    <button id="generate">Randomize</button>
-  </div>
+  <div class="container">
+    <div class="grid">
+      <div class="controls">
 
-  <canvas></canvas>
+        <h1>As<em>sort</em>ed Landscapes</h1>
+
+        <div class="control-row">
+
+          <div class="control select">
+            <select id="algo">
+              <option value="quicksort">Quicksort</option>
+              <option value="mergesort">Mergesort (bottom-up)</option>
+            </select>
+            <label for="algo">Quicksort</label>
+          </div>
+
+        </div>
+
+        <div class="control-row">
+
+          <div class="control knob" id="array-size-outer">
+            <label for="array-size">Array Size</label>
+            <input type="range" id="array-size" min="2" max="50" value="20" />
+          </div>
+
+          <div class="control knob">
+            <label for="max-line-count">Max Line Count</label>
+            <input type="range" id="max-line-count" min="2" max="50" value="50" />
+          </div>
+
+          <div class="control knob">
+              <label for="height">Scale</label>
+            <input type="range" id="height" min="1" max="100" value="100" />
+          </div>
+
+          <button id="generate">Randomize</button>
+
+        </div>
+      </div>
+
+      <canvas></canvas>
+    </div>
+  </div>
   
   <script src="index.js"></script>
   <script>
