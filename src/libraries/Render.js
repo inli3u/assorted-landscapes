@@ -52,21 +52,24 @@ function drawFilledDepth(ctx, all, pathFunc) {
 }
 
 function drawFilledFlat(ctx, all, pathFunc) {
-  const colorBg = 230;
-  const colorFg = 255;
+  const colorBg = 50;
+  const colorFg = 50;
   const canvas = document.querySelector('canvas');
 
   ctx.fillStyle = rgba(colorBg, colorBg, colorBg, 1);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = rgba(colorFg, colorFg, colorFg, 1);
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
 
   for (let i = 0; i < all.length; i++) {
     let row = all[i];
+
     pathFunc(ctx, row);
     closePath(row, ctx, canvas.width, canvas.height);
     ctx.fill();
+
+    pathFunc(ctx, row);
     ctx.lineWidth = i / all.length * 2 * window.devicePixelRatio + 2;
     ctx.stroke();
   }
