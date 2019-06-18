@@ -52,15 +52,11 @@ function drawFilledDepth(ctx, all, pathFunc) {
 }
 
 function drawFilledFlat(ctx, all, pathFunc) {
-  const colorBg = 50;
-  const colorFg = 50;
   const canvas = document.querySelector('canvas');
 
-  ctx.fillStyle = rgba(colorBg, colorBg, colorBg, 1);
+  ctx.fillStyle = '#3f4b4e';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = rgba(colorFg, colorFg, colorFg, 1);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.strokeStyle = 'rgb(238, 238, 238)';
 
   for (let i = 0; i < all.length; i++) {
     let row = all[i];
@@ -73,10 +69,6 @@ function drawFilledFlat(ctx, all, pathFunc) {
     ctx.lineWidth = i / all.length * 2 * window.devicePixelRatio + 2;
     ctx.stroke();
   }
-
-  // let color = 230;
-  // ctx.fillStyle = rgba(color, color, color, 1);
-  // ctx.fill();
 }
 
 function pointsFromRows(rows, scale, canvasWidth, canvasHeight) {
