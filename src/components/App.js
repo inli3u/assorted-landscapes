@@ -44,7 +44,7 @@ function App() {
       <div className="grid">
         <div className="controls">
 
-          <h1>Assorted Landscapes</h1>
+          <h1>As<strong>sorted</strong> Landscapes</h1>
 
           <div className="control select">
             <label htmlFor="algo">Algorithm</label>
@@ -55,12 +55,12 @@ function App() {
           </div>
 
           <div className="control knob">
-            <label htmlFor="grainularity">Grainularity</label>
+            <label htmlFor="grainularity">Complexity</label>
             <input type="range" id="grainularity" min="2" max="50" value={controls.grainularity} onChange={handleGrainularityChange} />
           </div>
 
           <div className="control knob">
-            <label htmlFor="steps">Steps</label>
+            <label htmlFor="steps">Level of Detail</label>
             <input type="range" id="steps" min="2" max="50" value={controls.steps} onChange={handleStepsChange} />
           </div>
 
