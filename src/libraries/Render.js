@@ -1,5 +1,3 @@
-'use strict';
-
 import {sample} from './ArrayUtil';
 
 
@@ -20,6 +18,7 @@ function draw(sortLog, steps, scale) {
   drawFilledFlat(ctx, linesParallax, makeBezierPath);
 }
 
+// eslint-disable-next-line no-unused-vars
 function drawStroked(ctx, all, pathFunc) {
   for (let i = 0; i < all.length; i++) {
     let row = all[i];
@@ -32,6 +31,7 @@ function drawStroked(ctx, all, pathFunc) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function drawFilledDepth(ctx, all, pathFunc) {
   let canvas = document.querySelector('canvas');
   let c = 30;
@@ -99,57 +99,6 @@ function pointsFromRows(rows, scale, canvasWidth, canvasHeight) {
   });
 }
 
-function pointsFromRowsEven(rows, canvasWidth, canvasHeight) {
-  // Height of first rowOffsetY, doubled
-  // 2 = 3 / 4
-  // 3 = 4 / 6
-  let rowHeight = 1 / (rows.length + 1) * 4 * canvasHeight;
-  console.log(rowHeight);
-
-  return rows.map((row, rowIndex) => {
-    const stepX = canvasWidth / (row.length - 1);
-
-    // 2 = 1 / 3, 2 / 3
-    // 3 = 1 / 4, 2 / 4, 3 / 4
-    let rowOffsetY = (rowIndex + 1) / (rows.length + 1) * canvasHeight;
-    if (rowIndex == 0) console.log(rowOffsetY);
-
-    return row.map((value, i) => {
-      let pointOffsetY = rowHeight * (1 - value) - (rowHeight / 2);
-
-      return {
-        x: i * stepX,
-        y: rowOffsetY + pointOffsetY
-      };
-    });
-  });
-}
-
-function parallax(lines, distance, strength) {
-  return lines.map((line, lineI) => {
-    let s = lineI / (lines.length - 1) * strength;
-    return line.map((point) => {
-      return {
-        x: point.x + distance + distance * s,
-        y: point.y
-      }
-    });
-  });
-}
-
-function parallaxPerspective(lines, camerax, canvasWidth) {
-  return lines.map((line, lineI) => {
-    //let 
-    let distance = 12 / ((lines.length - lineI) / 2 + 12) //* 0.02;
-    return line.map((point) => {
-      return {
-        x: (point.x - canvasWidth / 2 + camerax) * distance + canvasWidth / 2 ,
-        y: point.y
-      }
-    });
-  });
-}
-
 function makeBezierPath(ctx, row) {
   let px = row[0].x;
   let py = row[0].y;
@@ -172,6 +121,7 @@ function makeBezierPath(ctx, row) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function makeLinearPath(ctx, row) {
   ctx.beginPath();
   ctx.moveTo(row[0].x, row[0].y);

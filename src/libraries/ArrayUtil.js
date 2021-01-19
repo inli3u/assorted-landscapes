@@ -27,12 +27,12 @@ function partition(list, low, high, callback) {
   while (true) {
     do {
       ++i;
-      if (i == high) break;
+      if (i === high) break;
     } while (list[i] < pivot);
 
     do {
       --j;
-      if (j == low) break;
+      if (j === low) break;
     } while (list[j] > pivot);
 
     if (i >= j) {
@@ -114,7 +114,7 @@ export function resizeEnd(array, targetSize) {
 }
 
 export function resizeRandom(array, targetSize) {
-  if (targetSize == array.length) return array;
+  if (targetSize === array.length) return array;
 
   let copy = copyArray(array);
 
@@ -132,7 +132,7 @@ export function resizeRandom(array, targetSize) {
 }
 
 export function resizeMid(array, targetSize) {
-  if (targetSize == array.length) return array;
+  if (targetSize === array.length) return array;
 
   let copy = copyArray(array);
 
