@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
     let sortLog = ArrayUtils.sortArray(array, controls.algorithm);
     Render.draw(sortLog, controls.steps, controls.scale / 100);
-  });
+  }, [controls]);
 
   function handleAlgorithmChange(e) {
     setControls({...controls, algorithm: e.target.value});
@@ -55,17 +55,17 @@ function App() {
           </div>
 
           <div className="control knob">
-            <label htmlFor="grainularity">Complexity</label>
+            <label htmlFor="grainularity">Array length</label>
             <input type="range" id="grainularity" min="2" max="50" value={controls.grainularity} onChange={handleGrainularityChange} />
           </div>
 
           <div className="control knob">
-            <label htmlFor="steps">Level of Detail</label>
+            <label htmlFor="steps">Sorting iterations</label>
             <input type="range" id="steps" min="2" max="50" value={controls.steps} onChange={handleStepsChange} />
           </div>
 
           <div className="control knob">
-              <label htmlFor="scale">Scale</label>
+              <label htmlFor="scale">Y-scale</label>
             <input type="range" id="scale" min="1" max="100" value={controls.scale} onChange={handleScaleChange} />
           </div>
 
